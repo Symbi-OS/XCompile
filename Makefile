@@ -1,19 +1,93 @@
 # Following guide https://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/
 
+INSTALL_DIR=install_here
+
 # ifndef MY_FLAG
 # $(error MY_FLAG is not set)
 # endif
 
 NPROC=$(shell nproc)
 
+BINUTILS_VERSION=binutils-2.24
+GCC_VERSION=gcc-11.2.0
+LINUX_KERNEL_VERSION=linux-5.14
+GLIBC_VERSION=glibc-2.20
+# TODO pipe through linux and glibc.
+
+
+# wget -nc /binutils/$BINUTILS_VERSION.tar.gz
+# wget -nc https://ftp.gnu.org/gnu/gcc/$GCC_VERSION/$GCC_VERSION.tar.gz
+# wget -nc https://ftp.gnu.org/gnu/glibc/$GLIBC_VERSION.tar.xz
+
+# wget -nc https://www.kernel.org/pub/linux/kernel/v3.x/$LINUX_KERNEL_VERSION.tar.xz
+
+
+
+GNU_FTP=ftp.gnu.org/gnu
+COMPRESS_TYPE=.tar.gz
+
 # Binutils 2.37
-BINUTILS_TAR =mirror.us-midwest-1.nexcess.net/gnu/binutils/binutils-2.37.tar.gz
+BINUTILS_TAR =$(GNU_FTP)/binutils/$(BINUTILS_VERSION)
+
+
+BINUTILS_TAR=$(BINUTILS_VERSION)$(COMPRESS_TYPE)
+BINUTILS_URL=$(GNU_FTP)/binutils/$(BINUTILS_TAR)
+
+GCC_TAR=$(GCC_VERSION)$(COMPRESS_TYPE)
+GCC_URL=$(GNU_FTP)/gcc/$(GCC_VERSION)/$(GCC_TAR)
+
+ALL_TAR=$(BINUTILS_TAR) $(GCC_TAR)
+
+ALL_SRC=$(BINUTILS_VERSION) $(GCC_VERSION)
+
+# all: $(ALL_SRC)
+all: $(ALL_TAR)
+
+# prepare_all: $(ALL_BUILD)
+# 	mkdir $(INSTALL_DIR)
+
+# # Create build dirs
+# $(ALL_BUILD): $(ALL_SRC)
+# 	mkdir $@
+
+$(LINUX_KERNEL_VERSION): $(LINUX_TAR)
+	tar xf $<
+
+$(GLIBC_VERSION): $(GLIBC_TAR)
+	tar xf $<
+
+$(GCC_VERSION): $(GCC_TAR)
+	tar xf $<
+
+$(BINUTILS_VERSION): $(BINUTILS_TAR)
+	tar xf $<
+
+# NOTE: Obviously there's some nice way to do this but I'm tired.
+$(LINUX_KERNEL_VERSION):
+	wget $(LINUX_KERNEL_URL)
+
+$(GLIBC_TAR):
+	wget $(GLIBC_URL)
+
+$(GCC_TAR):
+	wget $(GCC_URL)
+
+$(BINUTILS_TAR):
+	wget $(BINUTILS_URL)
+
+clean:
+	rm -rf $(ALL_SRC) $(ALL_TAR)
+#https://ftp.gnu.org/gnu/binutils/binutils-2.24.tar.gz
+
 # GCC 11.2.0
-GCC_TAR =mirror.us-midwest-1.nexcess.net/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz
+# GCC_TAR =mirror.us-midwest-1.nexcess.net/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz
+# GCC_TAR =mirror.us-midwest-1.nexcess.net/gnu/gcc/gcc-11.2.0/gcc-11.2.0.tar.gz
 # Linux 5.14.0
-LINUX_TAR =mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.14.tar.gz
+# LINUX_TAR =mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.14.tar.gz
+# LINUX_TAR =mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.14.tar.gz
 # Glibc 2.34
-GLIBC_TAR =mirrors.kernel.org/gnu/glibc/glibc-2.34.tar.gz
+# GLIBC_TAR =mirrors.kernel.org/gnu/glibc/glibc-2.34.tar.gz
+# GLIBC_TAR =mirrors.kernel.org/gnu/glibc/glibc-2.34.tar.gz
 
 ALL_TAR_URL= $(BINUTILS_TAR) $(GCC_TAR) $(LINUX_TAR) $(GLIBC_TAR)
 
@@ -97,31 +171,32 @@ debug:
 	@echo my dog is $(DOGGIE)
 
 # To build we need
-prepare_all: $(ALL_BUILD)
+# prepare_all: $(ALL_BUILD)
+# 	mkdir $(INSTALL_DIR)
 
-# Create build dirs
-$(ALL_BUILD): $(ALL_SRC)
-	mkdir $@
+# # Create build dirs
+# $(ALL_BUILD): $(ALL_SRC)
+# 	mkdir $@
 
-# Passthrough, tar creates src dirs
-$(ALL_SRC): $(ALL_TAR)
-	@echo nice, got $@
+# # Passthrough, tar creates src dirs
+# $(ALL_SRC): $(ALL_TAR)
+# 	@echo nice, got $@
 
-$(ALL_TAR): $(ALL_TAR_URL)
-	tar -xf $@
+# $(ALL_TAR): $(ALL_TAR_URL)
+# 	tar -xf $@
 
-# Get tarballs and extract
-$(ALL_TAR_URL):
-	wget $@
+# # Get tarballs and extract
+# $(ALL_TAR_URL):
+# 	wget $@
 
-clean-build:
-	rm -rf $(ALL_BUILD)
+# clean-build:
+# 	rm -rf $(ALL_BUILD)
 
-clean-src:
-	rm -rf $(ALL_SRC)
+# clean-src:
+# 	rm -rf $(ALL_SRC)
 
-dist-clean: clean-src clean-build
-	rm -rf $(ALL_TAR)
+# dist-clean: clean-src clean-build
+# 	rm -rf $(ALL_TAR)
 
-install_clean:
-	rm -rf 
+# install_clean:
+# 	rm -rf $(INSTALL_DIR)
